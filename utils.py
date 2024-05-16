@@ -132,7 +132,7 @@ def load_pretrained(config, model, logger):
     torch.cuda.empty_cache()
 
 
-def save_checkpoint(config, epoch, model, max_accuracy, optimizer, lr_scheduler, loss_scaler, logger):
+def save_checkpoint(config, epoch, model, max_accuracy, optimizer, lr_scheduler, loss_scaler, logger, entireModel=False):
     save_state = {'model': model.state_dict(),
                   'optimizer': optimizer.state_dict(),
                   'lr_scheduler': lr_scheduler.state_dict(),
@@ -144,6 +144,11 @@ def save_checkpoint(config, epoch, model, max_accuracy, optimizer, lr_scheduler,
     save_path = os.path.join(config.OUTPUT, f'ckpt_epoch_{epoch}.pth')
     logger.info(f"{save_path} saving......")
     torch.save(save_state, save_path)
+    logger.info(f"{save_path} saved !!!")
+
+    if entireModel:
+        save_path = os.path.join(config.OUTPUT, f'ckpt_epoch_{epoch}_model.pth')
+        torch.save(model, save_path)
     logger.info(f"{save_path} saved !!!")
 
 
