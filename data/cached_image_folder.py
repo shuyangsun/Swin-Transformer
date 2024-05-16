@@ -56,6 +56,8 @@ def make_dataset_with_ann(ann_file, img_prefix, extensions):
     with open(ann_file, "r") as f:
         contents = f.readlines()
         for line_str in contents:
+            if len(line_str) <= 0:
+                continue
             path_contents = [c for c in line_str.split('\t')]
             im_file_name = path_contents[0]
             class_index = int(path_contents[1])
