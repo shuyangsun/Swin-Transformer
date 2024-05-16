@@ -37,8 +37,10 @@ pip install torch torchvision timm opencv-python termcolor yacs pyyaml scipy
 - Install fused window process for acceleration, activated by passing `--fused_window_process` in the running script
 
 ```bash
+ninja --version # check ninja installation
 cd kernels/window_process
-python setup.py install #--user
+python setup.py install
+cd ../../
 ```
 
 ### Data preparation
@@ -126,14 +128,14 @@ load data:
 To evaluate a pre-trained `Swin Transformer` on ImageNet val, run:
 
 ```bash
-torchrun --standalone --nnodes=1 --nproc-per-node=<num-of-gpus-to-use> main.py --eval \
+python -m torch.distributed.run --standalone --nnodes=1 --nproc-per-node=<num-of-gpus-to-use> main.py --eval \
 --cfg <config-file> --resume <checkpoint> --data-path <imagenet-path>
 ```
 
 For example, to evaluate the `Swin-B` with a single GPU:
 
 ```bash
-torchrun --standalone --nnodes=1 --nproc-per-node=1 <main.py --eval \
+python -m torch.distributed.run --standalone --nnodes=1 --nproc-per-node=1 <main.py --eval \
 --cfg configs/swin/swin_base_patch4_window7_224.yaml --resume swin_base_patch4_window7_224.pth --data-path <imagenet-path>
 ```
 
@@ -142,7 +144,7 @@ torchrun --standalone --nnodes=1 --nproc-per-node=1 <main.py --eval \
 To train a `Swin Transformer` on ImageNet from scratch, run:
 
 ```bash
-torchrun --standalone --nnodes=1 --nproc-per-node=2 main.py \
+python -m torch.distributed.run --standalone --nnodes=1 --nproc-per-node=2 main.py \
 --cfg <config-file> --data-path <imagenet-path> [--batch-size <batch-size-per-gpu> --output <output-directory> --tag <job-tag>]
 ```
 
