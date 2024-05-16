@@ -43,7 +43,7 @@ This repo is the official implementation of ["Swin Transformer: Hierarchical Vis
 
 ***07/09/2022***
 
-`News`: 
+`News`:
 
 1. SwinV2-G achieves `61.4 mIoU` on ADE20K semantic segmentation (+1.5 mIoU over the previous SwinV2-G model), using an additional [feature distillation (FD)](https://github.com/SwinTransformer/Feature-Distillation) approach, **setting a new recrod** on this benchmark. FD is an approach that can generally improve the fine-tuning performance of various pre-trained models, including DeiT, DINO, and CLIP. Particularly, it improves CLIP pre-trained ViT-L by +1.6% to reach `89.0%` on ImageNet-1K image classification, which is **the most accurate ViT-L model**.
 2. Merged a PR from **Nvidia** that links to faster Swin Transformer inference that have significant speed improvements on `T4 and A100 GPUs`.
@@ -55,12 +55,12 @@ This repo is the official implementation of ["Swin Transformer: Hierarchical Vis
 
 ***05/12/2022***
 
-1. Pretrained models of [Swin Transformer V2](https://arxiv.org/abs/2111.09883) on ImageNet-1K and ImageNet-22K are released. 
+1. Pretrained models of [Swin Transformer V2](https://arxiv.org/abs/2111.09883) on ImageNet-1K and ImageNet-22K are released.
 2. ImageNet-22K pretrained models for Swin-V1-Tiny and Swin-V2-Small are released.
 
 ***03/02/2022***
 
-1. Swin Transformer V2 and SimMIM got accepted by CVPR 2022. [SimMIM](https://github.com/microsoft/SimMIM) is a self-supervised pre-training approach based on masked image modeling, a key technique that works out the 3-billion-parameter Swin V2 model using `40x less labelled data` than that of previous billion-scale models based on JFT-3B. 
+1. Swin Transformer V2 and SimMIM got accepted by CVPR 2022. [SimMIM](https://github.com/microsoft/SimMIM) is a self-supervised pre-training approach based on masked image modeling, a key technique that works out the 3-billion-parameter Swin V2 model using `40x less labelled data` than that of previous billion-scale models based on JFT-3B.
 
 ***02/09/2022***
 
@@ -71,16 +71,20 @@ This repo is the official implementation of ["Swin Transformer: Hierarchical Vis
 1. Swin Transformer received ICCV 2021 best paper award (Marr Prize).
 
 ***08/09/2021***
+
 1. [Soft Teacher](https://arxiv.org/pdf/2106.09018v2.pdf) will appear at ICCV2021. The code will be released at [GitHub Repo](https://github.com/microsoft/SoftTeacher). `Soft Teacher` is an end-to-end semi-supervisd object detection method, achieving a new record on the COCO test-dev: `61.3 box AP` and `53.0 mask AP`.
- 
+
 ***07/03/2021***
-1. Add **Swin MLP**, which is an adaption of `Swin Transformer` by replacing all multi-head self-attention (MHSA) blocks by MLP layers (more precisely it is a group linear layer). The shifted window configuration can also significantly improve the performance of vanilla MLP architectures. 
+
+1. Add **Swin MLP**, which is an adaption of `Swin Transformer` by replacing all multi-head self-attention (MHSA) blocks by MLP layers (more precisely it is a group linear layer). The shifted window configuration can also significantly improve the performance of vanilla MLP architectures.
 
 ***06/25/2021***
+
 1. [Video Swin Transformer](https://arxiv.org/abs/2106.13230) is released at [Video-Swin-Transformer](https://github.com/SwinTransformer/Video-Swin-Transformer).
 `Video Swin Transformer` achieves state-of-the-art accuracy on a broad range of video recognition benchmarks, including action recognition (`84.9` top-1 accuracy on Kinetics-400 and `86.1` top-1 accuracy on Kinetics-600 with `~20x` less pre-training data and `~3x` smaller model size) and temporal modeling (`69.6` top-1 accuracy on Something-Something v2).
 
 ***05/12/2021***
+
 1. Used as a backbone for `Self-Supervised Learning`: [Transformer-SSL](https://github.com/SwinTransformer/Transformer-SSL)
 
 Using Swin-Transformer as the backbone for self-supervised learning enables us to evaluate the transferring performance of the learnt representations on down-stream tasks, which is missing in previous works due to the use of ViT/DeiT, which has not been well tamed for down-stream tasks.
@@ -137,7 +141,8 @@ ADE20K semantic segmentation (`53.5 mIoU` on val), surpassing previous models by
 | SwinV2-L<sup>\*</sup> | ImageNet-22K | 256x256 | 16x16 | 86.9 | 98.0 | 197M | 47.5G | 95  | [github](https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_large_patch4_window12_192_22k.pth)/[baidu](https://pan.baidu.com/s/11PhCV7qAGXtZ8dXNgyiGOw?pwd=swin)/[config](configs/swinv2/swinv2_large_patch4_window12_192_22k.yaml) | [github](https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_large_patch4_window12to16_192to256_22kto1k_ft.pth)/[baidu](https://pan.baidu.com/s/1pqp31N80qIWjFPbudzB6Bw?pwd=swin)/[config](configs/swinv2/swinv2_large_patch4_window12to16_192to256_22kto1k_ft.yaml) |
 | SwinV2-L<sup>\*</sup> | ImageNet-22K | 384x384 | 24x24 | 87.6 | 98.3 | 197M | 115.4G | 33  | [github](https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_large_patch4_window12_192_22k.pth)/[baidu](https://pan.baidu.com/s/11PhCV7qAGXtZ8dXNgyiGOw?pwd=swin)/[config](configs/swinv2/swinv2_large_patch4_window12_192_22k.yaml) | [github](https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_large_patch4_window12to24_192to384_22kto1k_ft.pth)/[baidu](https://pan.baidu.com/s/13URdNkygr3Xn0N3e6IwjgA?pwd=swin)/[config](configs/swinv2/swinv2_large_patch4_window12to24_192to384_22kto1k_ft.yaml) |
 
-Note: 
+Note:
+
 - SwinV2-B<sup>\*</sup>  (SwinV2-L<sup>\*</sup>) with input resolution of 256x256 and 384x384 both fine-tuned from the same pre-training model using a smaller input resolution of 192x192.
 - SwinV2-B<sup>\*</sup> (384x384) achieves 78.08 acc@1 on ImageNet-1K-V2 while SwinV2-L<sup>\*</sup> (384x384) achieves 78.31.
 
@@ -158,7 +163,7 @@ Note: access code for `baidu` is `swin`. C24 means each head has 24 channels.
 
 **ImageNet-22K Pretrained Swin-MoE Models**
 
-- Please refer to [get_started](get_started.md#mixture-of-experts-support) for instructions on running Swin-MoE. 
+- Please refer to [get_started](get_started.md#mixture-of-experts-support) for instructions on running Swin-MoE.
 - Pretrained models for Swin-MoE can be found in [MODEL HUB](MODELHUB.md#imagenet-22k-pretrained-swin-moe-models)
 
 ## Main Results on Downstream Tasks
@@ -200,7 +205,9 @@ Note: <sup>*</sup> indicates multi-scale testing.
   year={2021}
 }
 ```
+
 ## Citing Local Relation Networks (the first full-attention visual backbone)
+
 ```
 @inproceedings{hu2019local,
   title={Local Relation Networks for Image Recognition},
@@ -210,16 +217,20 @@ Note: <sup>*</sup> indicates multi-scale testing.
   year={2019}
 }
 ```
+
 ## Citing Swin Transformer V2
+
 ```
 @inproceedings{liu2021swinv2,
-  title={Swin Transformer V2: Scaling Up Capacity and Resolution}, 
+  title={Swin Transformer V2: Scaling Up Capacity and Resolution},
   author={Ze Liu and Han Hu and Yutong Lin and Zhuliang Yao and Zhenda Xie and Yixuan Wei and Jia Ning and Yue Cao and Zheng Zhang and Li Dong and Furu Wei and Baining Guo},
   booktitle={International Conference on Computer Vision and Pattern Recognition (CVPR)},
   year={2022}
 }
 ```
+
 ## Citing SimMIM (a self-supervised approach that enables SwinV2-G)
+
 ```
 @inproceedings{xie2021simmim,
   title={SimMIM: A Simple Framework for Masked Image Modeling},
@@ -228,7 +239,9 @@ Note: <sup>*</sup> indicates multi-scale testing.
   year={2022}
 }
 ```
+
 ## Citing SimMIM-data-scaling
+
 ```
 @article{xie2022data,
   title={On Data Scaling in Masked Image Modeling},
@@ -237,10 +250,12 @@ Note: <sup>*</sup> indicates multi-scale testing.
   year={2022}
 }
 ```
+
 ## Citing Swin-MoE
+
 ```
 @misc{hwang2022tutel,
-      title={Tutel: Adaptive Mixture-of-Experts at Scale}, 
+      title={Tutel: Adaptive Mixture-of-Experts at Scale},
       author={Changho Hwang and Wei Cui and Yifan Xiong and Ziyue Yang and Ze Liu and Han Hu and Zilong Wang and Rafael Salas and Jithin Jose and Prabhat Ram and Joe Chau and Peng Cheng and Fan Yang and Mao Yang and Yongqiang Xiong},
       year={2022},
       eprint={2206.03382},
@@ -258,7 +273,7 @@ Note: <sup>*</sup> indicates multi-scale testing.
 
 ## Third-party Usage and Experiments
 
-***In this pargraph, we cross link third-party repositories which use Swin and report results. You can let us know by raising an issue*** 
+***In this pargraph, we cross link third-party repositories which use Swin and report results. You can let us know by raising an issue***
 
 (`Note please report accuracy numbers and provide trained models in your new repository to facilitate others to get sense of correctness and model behavior`)
 
@@ -281,17 +296,17 @@ TensorFlow weights, code example here in [this repository](https://github.com/sa
 
 [06/29/2021] Swin-Transformer in PaddleClas and inference based on whl package: [https://github.com/PaddlePaddle/PaddleClas](https://github.com/PaddlePaddle/PaddleClas)
 
-[04/14/2021] Swin for RetinaNet in Detectron: https://github.com/xiaohu2015/SwinT_detectron2.
+[04/14/2021] Swin for RetinaNet in Detectron: <https://github.com/xiaohu2015/SwinT_detectron2>.
 
-[04/16/2021] Included in a famous model zoo: https://github.com/rwightman/pytorch-image-models.
+[04/16/2021] Included in a famous model zoo: <https://github.com/rwightman/pytorch-image-models>.
 
-[04/20/2021] Swin-Transformer classifier inference using TorchServe: https://github.com/kamalkraj/Swin-Transformer-Serve
+[04/20/2021] Swin-Transformer classifier inference using TorchServe: <https://github.com/kamalkraj/Swin-Transformer-Serve>
 
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+the rights to use your contribution. For details, visit <https://cla.opensource.microsoft.com>.
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
@@ -303,8 +318,8 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ## Trademarks
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+trademarks or logos is subject to and must follow
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.

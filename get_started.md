@@ -28,9 +28,7 @@ source .venv/bin/activate
 pip install --upgrade pip
 ```
 
-- Install `CUDA>=10.2` with `cudnn>=7` following
-  the [official installation instructions](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
-- Install `PyTorch>=1.8.0` and `torchvision>=0.9.0` with `CUDA>=10.2`:
+Install dependencies:
 
 ```bash
 pip install torch torchvision timm opencv-python termcolor yacs pyyaml scipy
