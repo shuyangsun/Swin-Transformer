@@ -116,7 +116,7 @@ def get_data_files(data_paths):
     data_files = []
     for data_path in data_paths:
         if not os.path.exists(data_path):
-            raise Exception("input data path not found")
+            raise Exception(f"input data path {data_path} not found")
         for root, _, files in os.walk(data_path):
             for file in files:
                 if file.lower().endswith((".jpg", ".jpeg", ".png")):
