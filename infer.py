@@ -139,7 +139,7 @@ if __name__ == "__main__":
     for i in range(device_count):
         file_lists.append(data_files[i * partition_size:(i + 1) * partition_size])
 
-    infer_args = [(model_path, data_path, lst, f"cuda:{i}", args.img_size, args.batch, args.half) for i, lst in enumerate(file_lists)]
+    infer_args = [(model_path, data_paths[i], lst, f"cuda:{i}", args.img_size, args.batch, args.half) for i, lst in enumerate(file_lists)]
     results = multiprocess(infer_args, infer, device_count)
     res = results[0]
     if len(results) > 1:
