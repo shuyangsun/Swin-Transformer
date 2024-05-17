@@ -112,17 +112,16 @@ def infer(model_path, root, files, device, img_size, batch_size, half):
 
         return df
 
-def get_data_files(data_paths):
+def get_data_files(data_path):
     data_files = []
-    for data_path in data_paths:
-        if not os.path.exists(data_path):
-            raise Exception(f"input data path {data_path} not found")
-        for root, _, files in os.walk(data_path):
-            for file in files:
-                if file.lower().endswith((".jpg", ".jpeg", ".png")):
-                    full_path = os.path.join(root, file)
-                    data_files.append(full_path)
-    return sorted(data_files)
+    if not os.path.exists(data_path):
+        raise Exception(f"input data path {data_path} not found")
+    for root, _, files in os.walk(data_path):
+        for file in files:
+            if file.lower().endswith((".jpg", ".jpeg", ".png")):
+                full_path = os.path.join(root, file)
+                data_files.append(full_path)
+    return data_files
 
 if __name__ == "__main__":
     parser = arg_parser()
@@ -131,7 +130,10 @@ if __name__ == "__main__":
     data_paths = [os.path.expanduser(os.path.expandvars(ele)) for ele in args.data]
     model_path = os.path.expanduser(os.path.expandvars(args.model))
 
-    data_files = multiprocess([[ele] for ele in data_paths], get_data_files, os.cpu_count() // 2)
+    files_set = set()
+    for data_path in data_paths:
+        files_set.update(set(get_data_files(data_path)))
+    data_files = sorted(list(files_set))
 
     device_count = torch.cuda.device_count()
     partition_size = (len(data_files) - 1) // device_count + 1
