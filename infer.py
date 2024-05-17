@@ -96,7 +96,7 @@ if __name__ == "__main__":
         image = image.cuda().to(device)
         logits = torch.concat((logits, m(infer(model, image)[:, :2]).cpu()), dim=0)
 
-    pred = torch.argmax(logits, dim=1, keepdim=True)
+    pred = torch.argmax(logits, dim=1, keepdim=True) + 1  # shift back to 1-based
     res = torch.concat((logits, pred), dim=1)
 
     df = pd.DataFrame(
