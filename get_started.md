@@ -31,7 +31,8 @@ pip install --upgrade pip
 Install dependencies:
 
 ```bash
-pip install torch torchvision timm opencv-python termcolor yacs pyyaml scipy
+pip install torch torchvision timm opencv-python termcolor yacs pyyaml scipy setuptools wheel
+pip install -v -U --no-build-isolation git+https://github.com/microsoft/tutel@main
 ```
 
 - Install fused window process for acceleration, activated by passing `--fused_window_process` in the running script

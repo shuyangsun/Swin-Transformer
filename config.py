@@ -265,14 +265,14 @@ _C.FUSED_WINDOW_PROCESS = False
 _C.FUSED_LAYERNORM = False
 
 
-def _update_config_from_file(config, cfg_file):
+def update_config_from_file(config, cfg_file):
     config.defrost()
     with open(cfg_file, 'r') as f:
         yaml_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
     for cfg in yaml_cfg.setdefault('BASE', ['']):
         if cfg:
-            _update_config_from_file(
+            update_config_from_file(
                 config, os.path.join(os.path.dirname(cfg_file), cfg)
             )
     print('=> merge config from {}'.format(cfg_file))
@@ -281,7 +281,7 @@ def _update_config_from_file(config, cfg_file):
 
 
 def update_config(config, args):
-    _update_config_from_file(config, args.cfg)
+    update_config_from_file(config, args.cfg)
 
     config.defrost()
     if args.opts:
@@ -349,11 +349,14 @@ def update_config(config, args):
     config.freeze()
 
 
+def base_config():
+    return _C.clone()
+
 def get_config(args):
     """Get a yacs CfgNode object with default values."""
     # Return a clone so that the defaults will not be altered
     # This is for the "local variable" use pattern
-    config = _C.clone()
+    config = base_config()
     update_config(config, args)
 
     return config
