@@ -1,14 +1,23 @@
 import os
+import imghdr
 import argparse
 import torch
 import cv2
 import pandas as pd
 import torchvision.transforms as T
 
-from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from multiprocessing import Pool
+from data.image_list import ImageList
 
+def multiprocess(items, func, nproc):
+    torch.multiprocessing.set_start_method("spawn")
+    if nproc == 0:
+        nproc = torch.cuda.device_count()
+    nproc = max(min(len(items), nproc), 1)
+    with Pool(nproc) as p:
+        return p.starmap(func, items)
 
 def arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -28,11 +37,18 @@ def arg_parser() -> argparse.ArgumentParser:
         help="Path to Pytorch model file.",
     )
     parser.add_argument(
-        "--size",
+        "--img-size",
         type=int,
         required=True,
         help="Max image size.",
     )
+    parser.add_argument(
+        "--batch",
+        type=int,
+        default=64,
+        help="Max image size.",
+    )
+    parser.add_argument('--half', action=argparse.BooleanOptionalAction)
     parser.add_argument(
         "-o",
         "--out",
@@ -53,9 +69,7 @@ def resize(img, size):
 def transform_func(size):
     return T.Compose(
         [
-            T.Lambda(lambda img: img.convert("RGB") if img.mode != "RGB" else img),
-            T.RandomResizedCrop(size, scale=(0.67, 1.0), ratio=(3.0 / 4.0, 4.0 / 3.0)),
-            T.RandomHorizontalFlip(),
+            T.CenterCrop(size),
             T.ToTensor(),
             T.Normalize(
                 mean=torch.tensor(IMAGENET_DEFAULT_MEAN),
@@ -66,47 +80,68 @@ def transform_func(size):
 
 
 @torch.no_grad()
-def infer(model, data):
-    return model(data)
+def infer(model_path, root, files, device, img_size, batch_size, half):
+    with torch.device(device):
+        transform = transform_func(img_size)
+        dataset = ImageList(root, files, transform=transform)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
+        model = torch.load(model_path)
+        if half:
+            model = model.half()
+        model.cuda().eval().to(device)
+        m = torch.nn.Softmax(dim=1)
+        logits = torch.empty((0, 2)).cpu()
+        for image in dataloader:
+            image = image.cuda().to(device)
+            if half:
+                image = image.half()
+            logits = torch.concat((logits, m(model(image)).cpu()), dim=0)
 
-import numpy as np
+        pred = torch.argmax(logits, dim=1, keepdim=True) + 1  # shift back to 1-based
+        res = torch.concat((logits, pred), dim=1)
+
+        basenames = [os.path.basename(file) for file in files]
+
+        df = pd.DataFrame(
+            data={
+                "file": pd.Series(basenames, dtype="str"),
+                "0": pd.Series(res[:, 0], dtype="float"),
+                "1": pd.Series(res[:, 1], dtype="float"),
+                "pred": pd.Series(res[:, 2], dtype="int"),
+            },
+        )
+
+        return df
 
 if __name__ == "__main__":
     parser = arg_parser()
     args = parser.parse_args()
-    device = "cuda:0"
 
     data_path = os.path.expanduser(os.path.expandvars(args.data))
     model_path = os.path.expanduser(os.path.expandvars(args.model))
 
-    model = torch.load(model_path)
-    model.cuda().eval().to(device)
-
     if not os.path.exists(data_path):
         raise Exception("input data path not found")
 
-    transform = transform_func(args.size)
-    dataset = ImageFolder(data_path, transform)
-    filenames = [os.path.basename(ele[0]) for ele in dataset.imgs]
-    dataloader = DataLoader(dataset, batch_size=128, shuffle=False)
-    m = torch.nn.Softmax(dim=1)
-    logits = torch.empty((0, 2)).cpu()
-    for image, _ in dataloader:
-        image = image.cuda().to(device)
-        logits = torch.concat((logits, m(infer(model, image)[:, :2]).cpu()), dim=0)
+    data_files = []
+    for root, _, files in os.walk(data_path):
+        for file in files:
+            full_path = os.path.join(root, file)
+            if imghdr.what(full_path) == "jpeg":
+                data_files.append(full_path)
+    data_files = sorted(data_files)
+    device_count = torch.cuda.device_count()
+    partition_size = (len(data_files) - 1) // device_count + 1
+    file_lists = list()
+    for i in range(device_count):
+        file_lists.append(data_files[i * partition_size:(i + 1) * partition_size])
 
-    pred = torch.argmax(logits, dim=1, keepdim=True) + 1  # shift back to 1-based
-    res = torch.concat((logits, pred), dim=1)
-
-    df = pd.DataFrame(
-        data={
-            "file": pd.Series(filenames, dtype="str"),
-            "0": pd.Series(res[:, 0], dtype="float"),
-            "1": pd.Series(res[:, 1], dtype="float"),
-            "pred": pd.Series(res[:, 2], dtype="int"),
-        },
-    )
-
+    infer_args = [(model_path, data_path, lst, f"cuda:{i}", args.img_size, args.batch, args.half) for i, lst in enumerate(file_lists)]
+    results = multiprocess(infer_args, infer, device_count)
+    res = results[0]
+    if len(results) > 1:
+        for cur in results[1:]:
+            cur = pd.concat((res, cur), axis=0)
     out_path = os.path.expanduser(os.path.expandvars(args.out))
-    df.to_csv(out_path, index=False)
+    res.to_csv(out_path, index=False, float_format='%.5f')
