@@ -1,5 +1,4 @@
 import os
-import imghdr
 import argparse
 import torch
 import cv2
@@ -120,8 +119,8 @@ def get_data_files(data_paths):
             raise Exception("input data path not found")
         for root, _, files in os.walk(data_path):
             for file in files:
-                full_path = os.path.join(root, file)
-                if imghdr.what(full_path) == "jpeg":
+                if file.lower().endswith((".jpg", ".jpeg", ".png")):
+                    full_path = os.path.join(root, file)
                     data_files.append(full_path)
     return sorted(data_files)
 
@@ -131,7 +130,6 @@ if __name__ == "__main__":
 
     data_paths = [os.path.expanduser(os.path.expandvars(ele)) for ele in args.data]
     model_path = os.path.expanduser(os.path.expandvars(args.model))
-    print(data_paths)
 
     data_files = multiprocess([[ele] for ele in data_paths], get_data_files, os.cpu_count() // 2)
 
