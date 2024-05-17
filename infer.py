@@ -13,8 +13,6 @@ from data.image_list import ImageList
 
 def multiprocess(items, func, nproc):
     torch.multiprocessing.set_start_method("spawn")
-    if nproc == 0:
-        nproc = torch.cuda.device_count()
     nproc = max(min(len(items), nproc), 1)
     with Pool(nproc) as p:
         return p.starmap(func, items)
@@ -28,7 +26,8 @@ def arg_parser() -> argparse.ArgumentParser:
         "--data",
         type=str,
         required=True,
-        help="Path to data directory or single data file.",
+        nargs='+',
+        help="Path to data directories.",
     )
     parser.add_argument(
         "--model",
@@ -114,23 +113,28 @@ def infer(model_path, root, files, device, img_size, batch_size, half):
 
         return df
 
+def get_data_files(data_paths):
+    data_files = []
+    for data_path in data_paths:
+        if not os.path.exists(data_path):
+            raise Exception("input data path not found")
+        for root, _, files in os.walk(data_path):
+            for file in files:
+                full_path = os.path.join(root, file)
+                if imghdr.what(full_path) == "jpeg":
+                    data_files.append(full_path)
+    return sorted(data_files)
+
 if __name__ == "__main__":
     parser = arg_parser()
     args = parser.parse_args()
 
-    data_path = os.path.expanduser(os.path.expandvars(args.data))
+    data_paths = [os.path.expanduser(os.path.expandvars(ele)) for ele in args.data]
     model_path = os.path.expanduser(os.path.expandvars(args.model))
+    print(data_paths)
 
-    if not os.path.exists(data_path):
-        raise Exception("input data path not found")
+    data_files = multiprocess([[ele] for ele in data_paths], get_data_files, os.cpu_count() // 2)
 
-    data_files = []
-    for root, _, files in os.walk(data_path):
-        for file in files:
-            full_path = os.path.join(root, file)
-            if imghdr.what(full_path) == "jpeg":
-                data_files.append(full_path)
-    data_files = sorted(data_files)
     device_count = torch.cuda.device_count()
     partition_size = (len(data_files) - 1) // device_count + 1
     file_lists = list()
