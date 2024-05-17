@@ -10,11 +10,13 @@ from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from multiprocessing import Pool
 from data.image_list import ImageList
 
+
 def multiprocess(items, func, nproc):
     torch.multiprocessing.set_start_method("spawn")
     nproc = max(min(len(items), nproc), 1)
     with Pool(nproc) as p:
         return p.starmap(func, items)
+
 
 def arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -25,7 +27,6 @@ def arg_parser() -> argparse.ArgumentParser:
         "--data",
         type=str,
         required=True,
-        nargs='+',
         help="Path to data directories.",
     )
     parser.add_argument(
@@ -46,7 +47,7 @@ def arg_parser() -> argparse.ArgumentParser:
         default=64,
         help="Max image size.",
     )
-    parser.add_argument('--half', action=argparse.BooleanOptionalAction)
+    parser.add_argument("--half", action=argparse.BooleanOptionalAction)
     parser.add_argument(
         "-o",
         "--out",
@@ -112,6 +113,7 @@ def infer(model_path, root, files, device, img_size, batch_size, half):
 
         return df
 
+
 def get_data_files(data_path):
     data_files = []
     if not os.path.exists(data_path):
@@ -123,29 +125,39 @@ def get_data_files(data_path):
                 data_files.append(full_path)
     return data_files
 
+
 if __name__ == "__main__":
     parser = arg_parser()
     args = parser.parse_args()
 
-    data_paths = [os.path.expanduser(os.path.expandvars(ele)) for ele in args.data]
+    data_path = os.path.expanduser(os.path.expandvars(args.data))
     model_path = os.path.expanduser(os.path.expandvars(args.model))
 
-    files_set = set()
-    for data_path in data_paths:
-        files_set.update(set(get_data_files(data_path)))
+    files_set = set(get_data_files(data_path))
     data_files = sorted(list(files_set))
 
     device_count = torch.cuda.device_count()
     partition_size = (len(data_files) - 1) // device_count + 1
     file_lists = list()
     for i in range(device_count):
-        file_lists.append(data_files[i * partition_size:(i + 1) * partition_size])
+        file_lists.append(data_files[i * partition_size : (i + 1) * partition_size])
 
-    infer_args = [(model_path, data_paths[i], lst, f"cuda:{i}", args.img_size, args.batch, args.half) for i, lst in enumerate(file_lists)]
+    infer_args = [
+        (
+            model_path,
+            data_path,
+            lst,
+            f"cuda:{i}",
+            args.img_size,
+            args.batch,
+            args.half,
+        )
+        for i, lst in enumerate(file_lists)
+    ]
     results = multiprocess(infer_args, infer, device_count)
     res = results[0]
     if len(results) > 1:
         for cur in results[1:]:
-            cur = pd.concat((res, cur), axis=0)
+            res = pd.concat((res, cur), axis=0)
     out_path = os.path.expanduser(os.path.expandvars(args.out))
-    res.to_csv(out_path, index=False, float_format='%.5f')
+    res.to_csv(out_path, index=False, float_format="%.5f")
