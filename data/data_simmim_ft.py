@@ -60,12 +60,12 @@ def build_loader_finetune(config):
 
 def build_dataset(is_train, config):
     transform = build_transform(is_train, config)
-    
+
     if config.DATA.DATASET == 'imagenet':
         prefix = 'train' if is_train else 'val'
         root = os.path.join(config.DATA.DATA_PATH, prefix)
         dataset = datasets.ImageFolder(root, transform=transform)
-        nb_classes = 1000
+        nb_classes = 1000 // 500
     else:
         raise NotImplementedError("We only support ImageNet Now.")
 

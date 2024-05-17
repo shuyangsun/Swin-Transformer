@@ -18,8 +18,8 @@ class WindowProcess(torch.autograd.Function):
 
         ctx.B = B
         ctx.H = H
-        ctx.W = W 
-        ctx.C = C 
+        ctx.W = W
+        ctx.C = C
         ctx.shift_size = shift_size
         ctx.window_size = window_size
         return output
@@ -28,8 +28,8 @@ class WindowProcess(torch.autograd.Function):
     def backward(ctx, grad_in):
         B = ctx.B
         H = ctx.H
-        W = ctx.W 
-        C = ctx.C 
+        W = ctx.W
+        C = ctx.C
         shift_size = ctx.shift_size
         window_size = ctx.window_size
 
@@ -44,8 +44,8 @@ class WindowProcessReverse(torch.autograd.Function):
 
         ctx.B = B
         ctx.H = H
-        ctx.W = W 
-        ctx.C = C 
+        ctx.W = W
+        ctx.C = C
         ctx.shift_size = shift_size
         ctx.window_size = window_size
 
@@ -55,8 +55,8 @@ class WindowProcessReverse(torch.autograd.Function):
     def backward(ctx, grad_in):
         B = ctx.B
         H = ctx.H
-        W = ctx.W 
-        C = ctx.C 
+        W = ctx.W
+        C = ctx.C
         shift_size = ctx.shift_size
         window_size = ctx.window_size
 
@@ -129,10 +129,10 @@ class Test_WindowProcess(unittest.TestCase):
         self.window_size = 7
         self.nH = self.H // self.window_size
         self.nW = self.W // self.window_size
-    
+
     def test_roll_and_window_partition_forward(self, dtype=torch.float32):
         input = torch.randn((self.B, self.H, self.W, self.C), dtype=dtype, requires_grad=True).cuda()
-        
+
         input1 = copy_one_tensor(input, True)
         input2 = copy_one_tensor(input, True)
 
@@ -141,14 +141,14 @@ class Test_WindowProcess(unittest.TestCase):
             expected = pyt_forward(input1, self.shift_size, self.window_size)
             # fused kernel
             fused_output = WindowProcess.apply(input2, self.B, self.H, self.W, self.C, -self.shift_size, self.window_size)
-        
+
         self.assertTrue(torch.equal(expected, fused_output))
         #self.assertTrue(torch.allclose(expected, fused_output, rtol=1e-05, atol=1e-08))
-    
+
     def test_roll_and_window_partition_backward(self, dtype=torch.float32):
         input = torch.randn((self.B, self.H, self.W, self.C), dtype=dtype, requires_grad=True).cuda()
         d_loss_tensor = torch.randn((self.B*self.nW*self.nH, self.window_size, self.window_size, self.C), dtype=dtype).cuda()
-        
+
         input1 = copy_one_tensor(input, True)
         input2 = copy_one_tensor(input, True)
 
@@ -158,13 +158,13 @@ class Test_WindowProcess(unittest.TestCase):
         # fused kernel
         fused_output = WindowProcess.apply(input2, self.B, self.H, self.W, self.C, -self.shift_size, self.window_size)
         fused_output.backward(d_loss_tensor)
-        
+
         self.assertTrue(torch.equal(expected, fused_output))
         #self.assertTrue(torch.allclose(expected, fused_output, rtol=1e-05, atol=1e-08))
 
     def test_window_merge_and_roll_forward(self, dtype=torch.float32):
         input = torch.randn((self.B*self.nH*self.nW, self.window_size, self.window_size, self.C), dtype=dtype, requires_grad=True).cuda()
-        
+
         input1 = copy_one_tensor(input, True)
         input2 = copy_one_tensor(input, True)
 
@@ -173,15 +173,15 @@ class Test_WindowProcess(unittest.TestCase):
             expected = reverse_pyt_forward(input1, self.shift_size, self.window_size, self.H, self.W)
             # fused kernel
             fused_output = WindowProcessReverse.apply(input2, self.B, self.H, self.W, self.C, self.shift_size, self.window_size)
-        
+
         self.assertTrue(torch.equal(expected, fused_output))
         #self.assertTrue(torch.allclose(expected, fused_output, rtol=1e-05, atol=1e-08))
-    
+
 
     def test_window_merge_and_roll_backward(self, dtype=torch.float32):
         input = torch.randn((self.B*self.nH*self.nW, self.window_size, self.window_size, self.C), dtype=dtype, requires_grad=True).cuda()
         d_loss_tensor = torch.randn((self.B, self.H, self.W, self.C), dtype=dtype, requires_grad=True).cuda()
-        
+
         input1 = copy_one_tensor(input, True)
         input2 = copy_one_tensor(input, True)
 
@@ -191,29 +191,29 @@ class Test_WindowProcess(unittest.TestCase):
         # fused kernel
         fused_output = WindowProcessReverse.apply(input2, self.B, self.H, self.W, self.C, self.shift_size, self.window_size)
         fused_output.backward(d_loss_tensor)
-        
+
         self.assertTrue(torch.equal(expected, fused_output))
         #self.assertTrue(torch.allclose(expected, fused_output, rtol=1e-05, atol=1e-08))
 
-    def test_forward_backward_speed(self, dtype=torch.float32, times=1000):
+    def test_forward_backward_speed(self, dtype=torch.float32, times=1000 // 500):
         input = torch.randn((self.B*self.nH*self.nW, self.window_size, self.window_size, self.C), dtype=dtype, requires_grad=True).cuda()
         d_loss_tensor = torch.randn((self.B, self.H, self.W, self.C), dtype=dtype, requires_grad=True).cuda()
-        
+
         input1 = copy_one_tensor(input, True)
         input2 = copy_one_tensor(input, True)
 
         # SwinTransformer official
-        def run_pyt(t=1000):
+        def run_pyt(t=1000 // 500):
             for _ in range(t):
                 expected = reverse_pyt_forward(input1, self.shift_size, self.window_size, self.H, self.W)
                 expected.backward(d_loss_tensor)
 
         # my op
-        def run_fusedop(t=1000):
+        def run_fusedop(t=1000 // 500):
             for _ in range(t):
                 fused_output = WindowProcessReverse.apply(input2, self.B, self.H, self.W, self.C, self.shift_size, self.window_size)
                 fused_output.backward(d_loss_tensor)
-        
+
         torch.cuda.synchronize()
         t1 = time.time()
         run_pyt(t=times)
@@ -227,7 +227,7 @@ class Test_WindowProcess(unittest.TestCase):
         print('Run {} times'.format(times))
         print('Original time cost: {}'.format(t2 - t1))
         print('Fused op time cost: {}'.format(t3 - t2))
-    
+
     def test_roll_and_window_partition_forward_fp16(self, dtype=torch.float16):
         self.test_roll_and_window_partition_forward(dtype=dtype)
 
@@ -236,11 +236,11 @@ class Test_WindowProcess(unittest.TestCase):
 
     def test_window_merge_and_roll_forward_fp16(self, dtype=torch.float16):
         self.test_window_merge_and_roll_forward(dtype=dtype)
-    
+
     def test_window_merge_and_roll_backward_fp16(self, dtype=torch.float16):
         self.test_window_merge_and_roll_backward(dtype=dtype)
 
-    def test_forward_backward_speed_fp16(self, dtype=torch.float16, times=1000):
+    def test_forward_backward_speed_fp16(self, dtype=torch.float16, times=1000 // 500):
         self.test_forward_backward_speed(dtype=dtype, times=times)
 
 

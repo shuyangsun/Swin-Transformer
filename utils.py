@@ -108,14 +108,14 @@ def load_pretrained(config, model, logger):
     Nc1 = head_bias_pretrained.shape[0]
     Nc2 = model.head.bias.shape[0]
     if (Nc1 != Nc2):
-        if Nc1 == 21841 and Nc2 == 1000:
+        if Nc1 == 21841 and Nc2 == 1000 // 500:
             logger.info("loading ImageNet-22K weight to ImageNet-1K ......")
-            map22kto1k_path = f'data/map22kto1k.txt'
-            with open(map22kto1k_path) as f:
-                map22kto1k = f.readlines()
-            map22kto1k = [int(id22k.strip()) for id22k in map22kto1k]
-            state_dict['head.weight'] = state_dict['head.weight'][map22kto1k, :]
-            state_dict['head.bias'] = state_dict['head.bias'][map22kto1k]
+            map22kto2_path = f'data/map22kto2.txt'
+            with open(map22kto2_path) as f:
+                map22kto2 = f.readlines()
+            map22kto2 = [int(id22k.strip()) for id22k in map22kto2]
+            state_dict['head.weight'] = state_dict['head.weight'][map22kto2, :]
+            state_dict['head.bias'] = state_dict['head.bias'][map22kto2]
         else:
             torch.nn.init.constant_(model.head.bias, 0.)
             torch.nn.init.constant_(model.head.weight, 0.)
