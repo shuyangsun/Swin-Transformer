@@ -68,6 +68,7 @@ def resize(img, size):
 def transform_func(size):
     return T.Compose(
         [
+            T.Lambda(lambda img: img.convert("RGB") if img.mode != "RGB" else img),
             T.CenterCrop(size),
             T.ToTensor(),
             T.Normalize(
